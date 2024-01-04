@@ -54,9 +54,13 @@ When I installed MicroPython, I found that the `esptool` command to copy the run
 
 ## Support for this Device in MicroPython
 
-TODO.
+The device-specific MicroPython build for the Atom series comes with a utility class that makes working with the LEDs and button easier, abstracting the hardware details away a bit.  The class is part of the MicroPython project, so is pre-installed in the runtime for the device.  [Check out the source for it on GitHub](https://github.com/micropython/micropython/blob/master/ports/esp32/boards/M5STACK_ATOM/modules/atom.py).
 
-TODO adding further support.
+I used this in the first stream to work with the LED matrix and the button.  Check out [`main.py`](first-livestream/main.py) from the first stream for example code.
+
+During the first stream, I realized that the class could benefit from an extra function to set the color of an LED given its x, y position on the matrix.  The existing class takes a LED position number with the first one being 0.  So, to set the first LED on the 2nd row you have to know it's number 5 (0-4 being the first row).
+
+I added my own `set_pixel_color_x_y` in my code and talked about doing a pull request to get something similar added to the MicroPython build for this device.  After the stream I created a pull request to add `set_pixel_color_x_y` and `get_pixel_color_x_y` functions. Let's see if it makes it into a future MicroPython release!  Follow its progress on GitHub [here](https://github.com/micropython/micropython/pull/13350).
 
 ## Code from the First Live Stream
 
