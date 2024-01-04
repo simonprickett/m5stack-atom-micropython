@@ -54,17 +54,29 @@ When I installed MicroPython, I found that the `esptool` command to copy the run
 
 ## Support for this Device in MicroPython
 
-The device-specific MicroPython build for the Atom series comes with a utility class that makes working with the LEDs and button easier, abstracting the hardware details away a bit.  The class is part of the MicroPython project, so is pre-installed in the runtime for the device.  [Check out the source for it on GitHub](https://github.com/micropython/micropython/blob/master/ports/esp32/boards/M5STACK_ATOM/modules/atom.py).
+The device-specific MicroPython build for the Atom series comes with a utility module that makes working with the LEDs and button easier, abstracting the hardware details away a bit.  The module is part of the MicroPython project, so is pre-installed in the runtime for the device.  [Check out the source for it on GitHub](https://github.com/micropython/micropython/blob/master/ports/esp32/boards/M5STACK_ATOM/modules/atom.py).
 
 I used this in the first stream to work with the LED matrix and the button.  Check out [`main.py`](first-livestream/main.py) from the first stream for example code.
 
-During the first stream, I realized that the class could benefit from an extra function to set the color of an LED given its x, y position on the matrix.  The existing class takes a LED position number with the first one being 0.  So, to set the first LED on the 2nd row you have to know it's number 5 (0-4 being the first row).
+During the first stream, I realized that the `Matrix` class could benefit from an extra function to set the color of an LED given its x, y position on the matrix.  The existing class takes a LED position number with the first one being 0.  So, to set the first LED on the 2nd row you have to know it's number 5 (0-4 being the first row).
 
 I added my own `set_pixel_color_x_y` in my code and talked about doing a pull request to get something similar added to the MicroPython build for this device.  After the stream I created a pull request to add `set_pixel_color_x_y` and `get_pixel_color_x_y` functions. Let's see if it makes it into a future MicroPython release!  Follow its progress on GitHub [here](https://github.com/micropython/micropython/pull/13350).
 
 ## Code from the First Live Stream
 
-TODO.
+In the first live stream I demonstrated how to control the LEDs (all at once and individually) using the `Matrix` class in the `atom` module.
+
+We then moved on to writing a utility function that took x, y co-ordinates to identify each LED in the matrix before seeing how to react to button presses with a callback function.
+
+I then demonstrated how to connect to a wifi network and use MicroPython's [MQTT client](https://pypi.org/project/micropython-umqtt.simple/) to receive messages from the [Cheerlights](https://cheerlights.com/) MQTT broker.  Cheerlights is a global network of connected lights that can be set to show different colours.
+
+MQTT is a lightweight protocol that uses the publish/subscribe model.  Read more about it and watch the video on [kevsrobots.com](https://www.kevsrobots.com/resources/how_it_works/mqtt.html) if you'd like to learn more.
+
+The current Cheerlights color is published to a few different MQTT topics on their broker.  To display the current color on the Atom Matrix we need to translate the information on a topic to R, G, B values and pass those into the `set_pixels_color` function in the `Matrix` class.
+
+I chose to do this with a set of `if` / `elif` statements so that I could specify my own R, G, B values for each color that Cheerlights can be set to.  This allowed me to pick representations that worked well with the camera and lighting I had for the live stream - avoiding the situation where the LEDs shine so brightly that the camera blurs them or becomes saturated with their color.
+
+The code from the first live stream can be found in this repo in the [`first-livestream`](first-livestream/) folder.
 
 ## Find this Useful?
 
