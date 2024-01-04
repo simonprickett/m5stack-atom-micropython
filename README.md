@@ -44,7 +44,13 @@ These devices cost around US$15 and you can buy them from the usual places:
 
 ## Installing MicroPython on the Device
 
-TODO.
+The device doesn't come with MicroPython pre-installed (it's set up to work with C and the [Arduino IDE](https://www.arduino.cc/en/software)).  Installing MicroPython is a relatively simple process: use the `esptool` Python script to erase the flash, download the right MicroPython image for it, and use the same `esptool` to copy the image to the device.
+
+Instructions are provided on the [device's page on the MicroPython site](https://micropython.org/download/M5STACK_ATOM/).
+
+Once you've installed MicroPython you can start a REPL using [mpremote](https://docs.micropython.org/en/latest/reference/mpremote.html), [Thonny](https://thonny.org/), or your usual preferred MicroPython development toolchain.  I chose Thonny for the live streams.
+
+When I installed MicroPython, I found that the `esptool` command to copy the runtime onto the device gave an error.  Omitting the baud rate option `--baud 460800` fixed it for me.
 
 ## Support for this Device in MicroPython
 
