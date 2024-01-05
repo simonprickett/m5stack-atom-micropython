@@ -29,7 +29,7 @@ def calculate_new_position(p, angle, size):
     return p
 
 
-i2c = SoftI2C(scl=Pin(21), sda=Pin(25))
+i2c = SoftI2C(scl = Pin(21), sda = Pin(25))
 mpu6886 = MPU6886(i2c, AFS_4G)
 
 a = atom.Matrix()
