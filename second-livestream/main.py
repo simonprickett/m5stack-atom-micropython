@@ -24,7 +24,7 @@ def calculate_new_position(p, angle, size):
     if (angle > MOVEMENT_THRESHOLD) and (p < 4):
         p = p + 1
     elif (angle < -MOVEMENT_THRESHOLD) and (p > 0):
-        p = p -1
+        p = p - 1
         
     return p
 
