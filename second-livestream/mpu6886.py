@@ -1,221 +1,214 @@
-# Copyright (c) 2020 Mika Tuupola
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of  this software and associated documentation files (the "Software"), to
-# deal in  the Software without restriction, including without limitation the
-# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-# sell copied of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# C.LEBOCQ 02/2020
+# MicroPython library for the MPU6886 imu ( M5StickC / ATOM Matrix ) 
+# Based on https://github.com/m5stack/M5StickC/blob/master/src/utility/MPU6886.cpp
+# See https://www.hackster.io/324677/fun-with-atom-matrix-323e3b
 
-# https://github.com/tuupola/micropython-mpu6886
+from machine import I2C
+from time import sleep
 
-"""
-MicroPython I2C driver for MPU6886 6-axis motion tracking device
-"""
+MPU6886_ADDRESS           = const(0x68)
+MPU6886_WHOAMI            = const(0x75)
+MPU6886_ACCEL_INTEL_CTRL  = const(0x69)
+MPU6886_SMPLRT_DIV        = const(0x19)
+MPU6886_INT_PIN_CFG       = const(0x37)
+MPU6886_INT_ENABLE        = const(0x38)
+MPU6886_ACCEL_XOUT_H      = const(0x3B)
+MPU6886_ACCEL_XOUT_L      = const(0x3C)
+MPU6886_ACCEL_YOUT_H      = const(0x3D)
+MPU6886_ACCEL_YOUT_L      = const(0x3E)
+MPU6886_ACCEL_ZOUT_H      = const(0x3F)
+MPU6886_ACCEL_ZOUT_L      = const(0x40)
 
-__version__ = "0.1.0-dev"
+MPU6886_TEMP_OUT_H        = const(0x41)
+MPU6886_TEMP_OUT_L        = const(0x42)
 
-# pylint: disable=import-error
-import ustruct
-import utime
-from machine import I2C, Pin
-from micropython import const
-# pylint: enable=import-error
+MPU6886_GYRO_XOUT_H       = const(0x43)
+MPU6886_GYRO_XOUT_L       = const(0x44)
+MPU6886_GYRO_YOUT_H       = const(0x45)
+MPU6886_GYRO_YOUT_L       = const(0x46)
+MPU6886_GYRO_ZOUT_H       = const(0x47)
+MPU6886_GYRO_ZOUT_L       = const(0x48)
 
-_CONFIG = const(0x1a)
-_GYRO_CONFIG = const(0x1b)
-_ACCEL_CONFIG = const(0x1c)
-_ACCEL_CONFIG2 = const(0x1d)
-_ACCEL_XOUT_H = const(0x3b)
-_ACCEL_XOUT_L = const(0x3c)
-_ACCEL_YOUT_H = const(0x3d)
-_ACCEL_YOUT_L = const(0x3e)
-_ACCEL_ZOUT_H = const(0x3f)
-_ACCEL_ZOUT_L = const(0x40)
-_TEMP_OUT_H = const(0x41)
-_TEMP_OUT_L = const(0x42)
-_GYRO_XOUT_H = const(0x43)
-_GYRO_XOUT_L = const(0x44)
-_GYRO_YOUT_H = const(0x45)
-_GYRO_YOUT_L = const(0x46)
-_GYRO_ZOUT_H = const(0x47)
-_GYRO_ZOUT_L = const(0x48)
-_PWR_MGMT_1 = const(0x6b)
-_WHO_AM_I = const(0x75)
+MPU6886_USER_CTRL         = const(0x6A)
+MPU6886_PWR_MGMT_1        = const(0x6B)
+MPU6886_PWR_MGMT_2        = const(0x6C)
+MPU6886_CONFIG            = const(0x1A)
+MPU6886_GYRO_CONFIG       = const(0x1B)
+MPU6886_ACCEL_CONFIG      = const(0x1C)
+MPU6886_ACCEL_CONFIG2     = const(0x1D)
+MPU6886_FIFO_EN           = const(0x23)
 
-ACCEL_FS_SEL_2G = const(0b00000000)
-ACCEL_FS_SEL_4G = const(0b00001000)
-ACCEL_FS_SEL_8G = const(0b00010000)
-ACCEL_FS_SEL_16G = const(0b00011000)
+#consts for Acceleration & Resolution scale
+AFS_2G      = const(0x00)
+AFS_4G      = const(0x01)
+AFS_8G      = const(0x02)
+AFS_16G     = const(0x03)
 
-_ACCEL_SO_2G = 16384 # 1 / 16384 ie. 0.061 mg / digit
-_ACCEL_SO_4G = 8192 # 1 / 8192 ie. 0.122 mg / digit
-_ACCEL_SO_8G = 4096 # 1 / 4096 ie. 0.244 mg / digit
-_ACCEL_SO_16G = 2048 # 1 / 2048 ie. 0.488 mg / digit
+GFS_250DPS  = const(0x00)
+GFS_500DPS  = const(0x01)
+GFS_1000DPS = const(0x02)
+GFS_2000DPS = const(0x03)
 
-GYRO_FS_SEL_250DPS = const(0b00000000)
-GYRO_FS_SEL_500DPS = const(0b00001000)
-GYRO_FS_SEL_1000DPS = const(0b00010000)
-GYRO_FS_SEL_2000DPS = const(0b00011000)
+class MPU6886():
 
-_GYRO_SO_250DPS = 131
-_GYRO_SO_500DPS = 62.5
-_GYRO_SO_1000DPS = 32.8
-_GYRO_SO_2000DPS = 16.4
-
-_TEMP_SO = 326.8
-_TEMP_OFFSET = 25
-
-SF_G = 1
-SF_M_S2 = 9.80665 # 1 g = 9.80665 m/s2 ie. standard gravity
-SF_DEG_S = 1
-SF_RAD_S = 0.017453292519943 # 1 deg/s is 0.017453292519943 rad/s
-
-class MPU6886:
-    """Class which provides interface to MPU6886 6-axis motion tracking device."""
-    def __init__(
-        self, i2c, address=0x68,
-        accel_fs=ACCEL_FS_SEL_2G, gyro_fs=GYRO_FS_SEL_250DPS,
-        accel_sf=SF_M_S2, gyro_sf=SF_RAD_S,
-        gyro_offset=(0, 0, 0)
-    ):
+    def __init__(self, i2c, Gscale = GFS_2000DPS, Ascale = AFS_8G):
         self.i2c = i2c
-        self.address = address
+        self.Gscale = Gscale
+        self.Ascale = Ascale
+        if self.init():
+            self.setAccelFsr(Ascale)
+            self.setGyroFsr(Gscale)
 
-        if 0x19 != self.whoami:
-            raise RuntimeError("MPU6886 not found in I2C bus.")
+    # sleep in ms
+    def sleepms(self,n):
+        sleep(n / 1000)
+    
+    # set I2C reg (1 byte)
+    def	setReg(self, reg, dat):
+        self.i2c.writeto(MPU6886_ADDRESS, bytearray([reg, dat]))
+		
+    # get I2C reg (1 byte)
+    def	getReg(self, reg):
+        self.i2c.writeto(MPU6886_ADDRESS, bytearray([reg]))
+        t =	self.i2c.readfrom(MPU6886_ADDRESS, 1)
+        return t[0]
 
-        self._register_char(_PWR_MGMT_1, 0b10000000) # reset
-        utime.sleep_ms(100)
-        self._register_char(_PWR_MGMT_1, 0b00000001) # autoselect clock
+    # get n reg
+    def	getnReg(self, reg, n):
+        self.i2c.writeto(MPU6886_ADDRESS, bytearray([reg]))
+        t =	self.i2c.readfrom(MPU6886_ADDRESS, n)
+        return t    
 
-        self._accel_so = self._accel_fs(accel_fs)
-        self._gyro_so = self._gyro_fs(gyro_fs)
-        self._accel_sf = accel_sf
-        self._gyro_sf = gyro_sf
-        self._gyro_offset = gyro_offset
+    def init(self):
+        tempdata = self.getReg(MPU6886_WHOAMI)
+        if tempdata != 0x19:
+            return False
+        self.sleepms(1)
+        regdata = 0x00
+        self.setReg(MPU6886_PWR_MGMT_1, regdata)
+        self.sleepms(10)      
+        regdata = (0x01<<7)
+        self.setReg(MPU6886_PWR_MGMT_1, regdata)
+        self.sleepms(10)
+        regdata = (0x01<<0)
+        self.setReg(MPU6886_PWR_MGMT_1, regdata)
+        self.sleepms(10)
+        regdata = 0x10
+        self.setReg(MPU6886_ACCEL_CONFIG, regdata)
+        self.sleepms(1)
+        regdata = 0x18
+        self.setReg(MPU6886_GYRO_CONFIG, regdata)
+        self.sleepms(1)
+        regdata = 0x01
+        self.setReg(MPU6886_CONFIG, regdata)
+        self.sleepms(1)
+        regdata = 0x05
+        self.setReg(MPU6886_SMPLRT_DIV, regdata)
+        self.sleepms(1)
+        regdata = 0x00
+        self.setReg(MPU6886_INT_ENABLE, regdata)
+        self.sleepms(1)
+        regdata = 0x00
+        self.setReg(MPU6886_ACCEL_CONFIG2, regdata)
+        self.sleepms(1)
+        regdata = 0x00
+        self.setReg(MPU6886_USER_CTRL, regdata)
+        self.sleepms(1)
+        regdata = 0x00
+        self.setReg(MPU6886_FIFO_EN, regdata)
+        self.sleepms(1)
+        regdata = 0x22
+        self.setReg(MPU6886_INT_PIN_CFG, regdata)
+        self.sleepms(1)
+        regdata = 0x01
+        self.setReg(MPU6886_INT_ENABLE, regdata)
+        self.sleepms(100)
+        self.getGres()
+        self.getAres()
+        return True      
 
-    @property
-    def acceleration(self):
-        """
-        Acceleration measured by the sensor. By default will return a
-        3-tuple of X, Y, Z axis acceleration values in m/s^2 as floats. Will
-        return values in g if constructor was provided `accel_sf=SF_M_S2`
-        parameter.
-        """
-        so = self._accel_so
-        sf = self._accel_sf
+    def getGres(self):
+        if self.Gscale == GFS_250DPS:
+            self.gRes = 250.0 / 32768.0
+        elif self.Gscale == GFS_500DPS:
+            self.gRes = 500.0/32768.0
+        elif self.Gscale == GFS_1000DPS:
+            self.gRes = 1000.0/32768.0
+        elif self.Gscale == GFS_2000DPS:
+            self.gRes = 2000.0/32768.0
+        else:
+            self.gRes = 250.0/32768.0
 
-        xyz = self._register_three_shorts(_ACCEL_XOUT_H)
-        return tuple([value / so * sf for value in xyz])
+    def getAres(self):
+        if self.Ascale == AFS_2G:
+            self.aRes = 2.0/32768.0
+        elif self.Ascale == AFS_4G:
+            self.aRes = 4.0/32768.0
+        elif self.Ascale == AFS_8G: 
+            self.aRes = 8.0/32768.0
+        elif self.Ascale == AFS_16G:
+            self.aRes = 16.0/32768.0
+        else:
+            self.aRes = 2.0/32768.0
 
-    @property
-    def gyro(self):
-        """
-        X, Y, Z radians per second as floats.
-        """
-        so = self._gyro_so
-        sf = self._gyro_sf
-        ox, oy, oz = self._gyro_offset
+    def getAccelAdc(self):
+        buf = self.getnReg(MPU6886_ACCEL_XOUT_H,6)
+                   
+        ax = (buf[0]<<8) | buf[1]
+        ay = (buf[2]<<8) | buf[3]
+        az = (buf[4]<<8) | buf[5]
+        return ax,ay,az
 
-        xyz = self._register_three_shorts(_GYRO_XOUT_H)
-        xyz = [value / so * sf for value in xyz]
+    def getAccelData(self):
+        ax,ay,az = self.getAccelAdc()
+        if ax > 32768:
+            ax -= 65536
+        if ay > 32768:
+            ay -= 65536
+        if az > 32768:
+            az -= 65536
+        ax *=  self.aRes
+        ay *=  self.aRes
+        az *=  self.aRes
+        return ax,ay,az
 
-        xyz[0] -= ox
-        xyz[1] -= oy
-        xyz[2] -= oz
+    def getGyroAdc(self):
+        buf = self.getnReg(MPU6886_GYRO_XOUT_H,6)
+        gx = (buf[0]<<8) | buf[1]  
+        gy = (buf[2]<<8) | buf[3]  
+        gz = (buf[4]<<8) | buf[5]
+        return gx,gy,gz
 
-        return tuple(xyz)
+    def getGyroData(self):
+        gx,gy,gz = self.getGyroAdc()
+        if gx > 32768:
+            gx -= 65536
+        if gy > 32768:
+            gy -= 65536
+        if gz > 32768:
+            gz -= 65536 
+        gx *= self.gRes
+        gy *= self.gRes
+        gz *= self.gRes
+        return gx, gy, gz 
 
-    @property
-    def temperature(self):
-        """
-        Die temperature in celcius as a float.
-        """
-        temp = self._register_short(_TEMP_OUT_H)
-        # return ((temp - _TEMP_OFFSET) / _TEMP_SO) + _TEMP_OFFSET
-        return (temp / _TEMP_SO) +  _TEMP_OFFSET
+    def getTempAdc(self):
+        buf = self.getnReg(MPU6886_TEMP_OUT_H,2)
+        return (buf[0]<<8) | buf[1]  
 
-    @property
-    def whoami(self):
-        """ Value of the whoami register. """
-        return self._register_char(_WHO_AM_I)
+    def getTempData(self):
+        return self.getTempAdc() / 326.8 + 25.0
 
-    def calibrate(self, count=256, delay=0):
-        ox, oy, oz = (0.0, 0.0, 0.0)
-        self._gyro_offset = (0.0, 0.0, 0.0)
-        n = float(count)
+    def setGyroFsr(self,scale):
+        regdata = (scale<<3)
+        self.setReg(MPU6886_GYRO_CONFIG, regdata)
+        self.sleepms(10)
+        self.Gscale = scale
+        self.getGres()
 
-        while count:
-            utime.sleep_ms(delay)
-            gx, gy, gz = self.gyro
-            ox += gx
-            oy += gy
-            oz += gz
-            count -= 1
-
-        self._gyro_offset = (ox / n, oy / n, oz / n)
-        return self._gyro_offset
-
-    def _register_short(self, register, value=None, buf=bytearray(2)):
-        if value is None:
-            self.i2c.readfrom_mem_into(self.address, register, buf)
-            return ustruct.unpack(">h", buf)[0]
-
-        ustruct.pack_into(">h", buf, 0, value)
-        return self.i2c.writeto_mem(self.address, register, buf)
-
-    def _register_three_shorts(self, register, buf=bytearray(6)):
-        self.i2c.readfrom_mem_into(self.address, register, buf)
-        return ustruct.unpack(">hhh", buf)
-
-    def _register_char(self, register, value=None, buf=bytearray(1)):
-        if value is None:
-            self.i2c.readfrom_mem_into(self.address, register, buf)
-            return buf[0]
-
-        ustruct.pack_into("<b", buf, 0, value)
-        return self.i2c.writeto_mem(self.address, register, buf)
-
-    def _accel_fs(self, value):
-        self._register_char(_ACCEL_CONFIG, value)
-
-        # Return the sensitivity divider
-        if ACCEL_FS_SEL_2G == value:
-            return _ACCEL_SO_2G
-        elif ACCEL_FS_SEL_4G == value:
-            return _ACCEL_SO_4G
-        elif ACCEL_FS_SEL_8G == value:
-            return _ACCEL_SO_8G
-        elif ACCEL_FS_SEL_16G == value:
-            return _ACCEL_SO_16G
-
-    def _gyro_fs(self, value):
-        self._register_char(_GYRO_CONFIG, value)
-
-        # Return the sensitivity divider
-        if GYRO_FS_SEL_250DPS == value:
-            return _GYRO_SO_250DPS
-        elif GYRO_FS_SEL_500DPS == value:
-            return _GYRO_SO_500DPS
-        elif GYRO_FS_SEL_1000DPS == value:
-            return _GYRO_SO_1000DPS
-        elif GYRO_FS_SEL_2000DPS == value:
-            return _GYRO_SO_2000DPS
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        pass
+    def setAccelFsr(self,scale):
+        regdata = (scale<<3)
+        self.setReg(MPU6886_ACCEL_CONFIG, regdata)
+        self.sleepms(10)
+        self.Ascale = scale
+        self.getAres()
