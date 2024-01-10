@@ -20,7 +20,7 @@ def compute_angles(ax, ay, az):
     return pitch, roll
 
 
-def calculate_new_position(p, angle, size):
+def calculate_new_position(p, angle):
     if (angle > MOVEMENT_THRESHOLD) and (p < 4):
         p = p + 1
     elif (angle < -MOVEMENT_THRESHOLD) and (p > 0):
@@ -28,8 +28,7 @@ def calculate_new_position(p, angle, size):
         
     return p
 
-
-i2c = SoftI2C(scl = Pin(21), sda = Pin(25))
+i2c = SoftI2C(scl = Pin(atom.I2C0_SCL_PIN), sda = Pin(atom.I2C0_SDA_PIN))
 mpu6886 = MPU6886(i2c, AFS_4G)
 
 a = atom.Matrix()
@@ -46,8 +45,8 @@ while True:
     print(f"pitch: {pitch}, roll: {roll}")
     
     set_pixel_color_x_y(x, y, *COLOR_OFF)
-    x = calculate_new_position(x, pitch, 5)
-    y = calculate_new_position(y, roll, 5)
+    x = calculate_new_position(x, pitch)
+    y = calculate_new_position(y, roll)
     set_pixel_color_x_y(x, y, *COLOR_RED)
     
     time.sleep(0.2)
