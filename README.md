@@ -14,11 +14,15 @@ Check out the videos on YouTube (click the images to view -- come on GitHub we n
 
 In episode 1 I installed MicroPython and wrote code to use the LEDs and button.  Then I demonstrated how to connect to WiFi and read and display the current Cheerlights color using an MQTT broker.
 
-Episode 2 to follow at 11:30am UTC on Jan 10th 2024!  I'm aiming to try to use the device's accelerometer next.  Sign up here... 
+In Episode 2 I showed a small pull request that I'd made to improve MicroPython's utility module for the M5Stack Atom Matrix and we played with the accelerometer.
 
 [![Episode 2](m5stack_atom_matrix_micropython_episode_2.png)](https://www.youtube.com/watch?v=-Ej06U2x-i8)
 
-Subscribe on [YouTube](https://www.youtube.com/@simonprickett) or [follow me on Twitter](https://twitter.com/simon_prickett) to be notified when it's happening.  My live streams also go out on LinkedIn and Twitch if you prefer.
+Episode 3 is scheduled for Friday 12th January 2024 at 11am UTC.  I'll be trying to connect different sensors to the device using the Grove connector that's built into it.
+
+[![Episode 3](m5stack_atom_matrix_micropython_episode_3.png)](https://www.youtube.com/watch?v=f3BA2R5eIJU)
+
+Subscribe on [YouTube](https://www.youtube.com/@simonprickett) or [follow me on Twitter](https://twitter.com/simon_prickett) to be notified when streams are scheduled.  My live streams also go out on LinkedIn and [Twitch](https://twitch.tv/simonprickett) if you prefer.
 
 ## The M5Stack Atom Matrix Device
 
