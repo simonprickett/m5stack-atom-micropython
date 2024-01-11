@@ -90,7 +90,7 @@ def temp_humidity_sensor():
     
     while True:
         dht11.measure()
-        new_val = dhtr11.humidity()
+        new_val = dht11.humidity()
         print(f"temp: {dht11.temperature()}, humidity: {new_val}")
         # TODO appropriate threshold level.
         update_display(old_val, new_val, 0)
@@ -98,7 +98,7 @@ def temp_humidity_sensor():
         time.sleep(1)
         
         
-pir_sensor()
+#pir_sensor()
 #light_sensor()
-#temp_humidity_sensor()
+temp_humidity_sensor()
     
