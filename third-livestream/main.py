@@ -23,12 +23,10 @@ def set_pixels_color_x_y(pixels, r, g, b):
     for x, y in pixels:
         set_pixel_color_x_y(x, y, r, g, b)
 
-def update_display(old_val, new_val, threshold):
+def update_display(old_val, new_val):
     # Clear the display.
     a.set_pixels_color(*COLOR_OFF)
     
-    # Is the value going up?
-    # TODO work threshold into this...
     if new_val > old_val:
         set_pixels_color_x_y(UP_ARROW, *COLOR_RED)
     elif new_val < old_val:
@@ -36,11 +34,39 @@ def update_display(old_val, new_val, threshold):
     else:
         set_pixels_color_x_y(SIDE_ARROW, *COLOR_BLUE)
 
+        
+def light_sensor():
+    # Grove pins are 26 and 32.  32 has ADC.
+    light = ADC(32)
+    old_val = 0
+    
+    while True:
+        new_val = light.read_u16()
+        print(f"light: {new_val}")
+        update_display(old_val, new_val)
+        old_val = new_val
+        time.sleep(0.5)
+        
+        
+def temp_humidity_sensor():
+    # https://randomnerdtutorials.com/esp32-esp8266-dht11-dht22-micropython-temperature-humidity-sensor/
+    # https://docs.micropython.org/en/latest/esp8266/quickref.html#dht-driver
+    # Grove pins are 26 and 32.
+    dht11 = dht.DHT11(Pin(32))
+    old_val = 0
+    
+    while True:
+        dht11.measure()
+        new_val = dht11.humidity()
+        print(f"temp: {dht11.temperature()}, humidity: {new_val}")
+        update_display(old_val, new_val)
+        old_val = new_val
+        time.sleep(1)
 
-# Grove pins are 26 and 32.
 
 def pir_sensor():
-    pir = Pin(26, Pin.IN)
+    # Grove pins are 26 and 32.
+    pir = Pin(32, Pin.IN)
     last_triggered_at = 0
     
     while True:
@@ -59,6 +85,8 @@ def pir_sensor():
             a.set_pixels_color(*COLOR_OFF)
             set_pixels_color_x_y([(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (0, 1), (4, 1), (0, 2), (4, 2), (0, 3), (4, 3), (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)], *COLOR_GREEN)
             time.sleep(0.5)
+            a.set_pixels_color(*COLOR_GREEN)
+            time.sleep(0.5)
             a.set_pixels_color(*COLOR_OFF)
             
             # Prevent double trigger.
@@ -68,37 +96,8 @@ def pir_sensor():
             
         time.sleep(0.1)
         
-        
-def light_sensor():
-    light = ADC(32)
-    old_val = 0
-    
-    while True:
-        new_val = light.read_u16()
-        print(f"light: {new_val}")
-        # TODO appropriate threshold level.
-        update_display(old_val, new_val, 0)
-        old_val = new_val
-        time.sleep(0.5)
-        
-        
-def temp_humidity_sensor():
-    # https://randomnerdtutorials.com/esp32-esp8266-dht11-dht22-micropython-temperature-humidity-sensor/
-    # https://docs.micropython.org/en/latest/esp8266/quickref.html#dht-driver
-    dht11 = dht.DHT11(Pin(32))
-    old_val = 0
-    
-    while True:
-        dht11.measure()
-        new_val = dht11.humidity()
-        print(f"temp: {dht11.temperature()}, humidity: {new_val}")
-        # TODO appropriate threshold level.
-        update_display(old_val, new_val, 0)
-        old_val = new_val
-        time.sleep(1)
-        
-        
+
+light_sensor()
+#temp_humidity_sensor()
 #pir_sensor()
-#light_sensor()
-temp_humidity_sensor()
     
