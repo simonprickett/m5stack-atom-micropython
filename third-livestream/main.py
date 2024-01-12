@@ -37,11 +37,11 @@ def update_display(old_val, new_val):
         
 def light_sensor():
     # Grove pins are 26 and 32.  32 has ADC.
-    light = ADC(32)
+    light_sensor = ADC(32)
     old_val = 0
     
     while True:
-        new_val = light.read_u16()
+        new_val = light_sensor.read_u16()
         print(f"light: {new_val}")
         update_display(old_val, new_val)
         old_val = new_val
@@ -50,7 +50,7 @@ def light_sensor():
         
 def temp_humidity_sensor():
     # https://randomnerdtutorials.com/esp32-esp8266-dht11-dht22-micropython-temperature-humidity-sensor/
-    # https://docs.micropython.org/en/latest/esp8266/quickref.html#dht-driver
+    # https://docs.micropython.org/en/latest/esp32/quickref.html#dht-driver
     # Grove pins are 26 and 32.
     dht11 = dht.DHT11(Pin(32))
     old_val = 0
