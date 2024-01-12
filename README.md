@@ -46,7 +46,7 @@ These devices cost around US$15 and you can buy them from the usual places:
 * Direct from [M5Stack](https://shop.m5stack.com/products/atom-matrix-esp32-development-kit).
 * [Pimoroni](https://shop.pimoroni.com/products/atom-matrix-esp32-development-kit?variant=31880178532435) (UK based, worldwide shipping).
 * [The Pi Hut](https://thepihut.com/products/atom-matrix-esp32-development-kit) (UK based, worldwide shipping).
-* [Adafruit](https://www.adafruit.com/product/4497) (US based, worlwide shipping).
+* [Adafruit](https://www.adafruit.com/product/4497) (US based, worldwide shipping).
 * Others...
 
 ## Installing MicroPython on the Device
