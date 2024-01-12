@@ -18,11 +18,11 @@ In Episode 2 I showed a small pull request that I'd made to improve MicroPython'
 
 [![Episode 2](m5stack_atom_matrix_micropython_episode_2.png)](https://www.youtube.com/watch?v=-Ej06U2x-i8)
 
-Episode 3 is scheduled for Friday 12th January 2024 at 11am UTC.  I'll be trying to connect different sensors to the device using the Grove connector that's built into it.
+In Episode 3 I connected three different sensors to the device using the Grove connector that's built into it.  These were a light sensor, a DHT11 temperature/humidity sensor and a PIR motion sensor.
 
 [![Episode 3](m5stack_atom_matrix_micropython_episode_3.png)](https://www.youtube.com/watch?v=f3BA2R5eIJU)
 
-Subscribe on [YouTube](https://www.youtube.com/@simonprickett) or [follow me on Twitter](https://twitter.com/simon_prickett) to be notified when streams are scheduled.  My live streams also go out on LinkedIn and [Twitch](https://twitch.tv/simonprickett) if you prefer.
+Subscribe on [YouTube](https://www.youtube.com/@simonprickett) or [follow me on Twitter](https://twitter.com/simon_prickett) to be notified when future project streams are scheduled.  My live streams also go out on [LinkedIn](https://www.linkedin.com/in/simonprickett/), [Twitch](https://twitch.tv/simonprickett) and [Twitter](https://twitter.com/simon_prickett) if you prefer.
 
 ## The M5Stack Atom Matrix Device
 
@@ -45,6 +45,7 @@ These devices cost around US$15 and you can buy them from the usual places:
 
 * Direct from [M5Stack](https://shop.m5stack.com/products/atom-matrix-esp32-development-kit).
 * [Pimoroni](https://shop.pimoroni.com/products/atom-matrix-esp32-development-kit?variant=31880178532435) (UK based, worldwide shipping).
+* [The Pi Hut](https://thepihut.com/products/atom-matrix-esp32-development-kit) (UK based, worldwide shipping).
 * [Adafruit](https://www.adafruit.com/product/4497) (US based, worlwide shipping).
 * Others...
 
