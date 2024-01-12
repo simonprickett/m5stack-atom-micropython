@@ -6,6 +6,8 @@
 
 This repository contains the code that accompanies my live streaming series in which I played around with installing and running MicroPython code on the M5Stack Atom Matrix device.
 
+There's also a [short article on my website](https://simonprickett.dev/micropython-on-the-m5stack-atom-matrix/) that covers this project.
+
 ## Videos
 
 Check out the videos on YouTube (click the images to view -- come on GitHub we need YouTube embeds in README files!)...
